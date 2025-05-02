@@ -54,4 +54,7 @@ export class UserEntity {
 
   @Column({ type: 'uuid', nullable: true })
   avatar_id?: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  online?: number; // if null user online now, otherwise store timestamp when user been online
 }

@@ -9,7 +9,6 @@ import { randomUUID } from 'crypto';
 import * as moment from 'moment';
 import { ILike } from 'typeorm';
 import { StorageItemEntity } from '../entities/storage-item.entity';
-import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class AuthService extends BaseService {
@@ -75,12 +74,21 @@ export class AuthService extends BaseService {
         first_name: dto.first_name,
         last_name: dto.last_name,
         created_at: moment.utc().valueOf(),
-        avatar_id: storageItem.id,
+        avatar_id: storageItem?.id,
       } satisfies UserEntity),
     );
 
     const tokens = await this.generateTokens(UserMapper.toDto(insertResult));
 
     return tokens;
+  }
+
+  async validateToken(token: string) {
+    const payload = await this.jwt.verifyAsync<UserDto>(token, {
+      ignoreExpiration: false,
+      secret: this.config.getOrThrow<string>('JWT_SECRET'),
+    });
+
+    return payload;
   }
 }
