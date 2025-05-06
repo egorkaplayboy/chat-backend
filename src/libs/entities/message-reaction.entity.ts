@@ -11,11 +11,14 @@ import { nameof } from '../utils/entity';
 import { UserEntity } from './user.entity';
 
 @Entity({ name: 'message_reaction' })
-@Index([
-  nameof<MessageReactionEntity>('message_id'),
-  nameof<MessageReactionEntity>('author_id'),
-  nameof<MessageReactionEntity>('value'),
-])
+@Index(
+  [
+    nameof<MessageReactionEntity>('message_id'),
+    nameof<MessageReactionEntity>('author_id'),
+    nameof<MessageReactionEntity>('value'),
+  ],
+  { unique: true },
+)
 export class MessageReactionEntity {
   @PrimaryColumn('uuid')
   id: string;

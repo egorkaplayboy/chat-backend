@@ -1,9 +1,23 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { UserEntity } from './user.entity';
 import { nameof } from '../utils/entity';
 import { ChatEntity } from './chat.entity';
 
 @Entity({ name: 'chat_user_setting' })
+@Index(
+  [
+    nameof<ChatUserSettingEntity>('chat_id'),
+    nameof<ChatUserSettingEntity>('user_id'),
+  ],
+  { unique: true },
+)
 export class ChatUserSettingEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;
@@ -29,4 +43,7 @@ export class ChatUserSettingEntity {
 
   @Column({ type: Boolean, default: false })
   blocked: boolean;
+
+  @Column('bigint')
+  created_at: number;
 }

@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { StorageService } from '../storage/storage.service';
@@ -12,9 +11,6 @@ export abstract class BaseService {
 
   @Inject(ConfigService)
   protected readonly config: ConfigService;
-
-  @Inject(JwtService)
-  protected readonly jwt: JwtService;
 
   @Inject(StorageService)
   protected readonly storage: StorageService;

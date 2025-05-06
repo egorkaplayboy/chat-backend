@@ -72,7 +72,7 @@ export class StorageService implements OnModuleInit {
         filename: storageItem.originalname,
         contentType: storageItem.mimetype,
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error?.$metadata?.httpStatusCode === 404) {
         throw new HttpException('File not found', HttpStatus.NOT_FOUND);
       }

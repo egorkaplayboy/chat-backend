@@ -12,11 +12,10 @@ import { AuthService } from '../auth/auth.service';
 import { UserEntity } from '../entities/user.entity';
 import { nameof } from '../utils/entity';
 import * as moment from 'moment';
+import { NoticeType, WsPayload } from './gateway.type';
 
 @WebSocketGateway(5000)
-export class GatewayGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class Gateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private readonly server!: Server;
 
@@ -32,6 +31,8 @@ export class GatewayGateway
   async handleConnection(client: Socket) {
     const payload = await this.validateToken(client);
 
+    client.join(payload.id);
+
     await this.manager.update(
       UserEntity,
       { [nameof<UserEntity>('id')]: payload.id },
@@ -42,11 +43,18 @@ export class GatewayGateway
   async handleDisconnect(client: Socket) {
     const payload = await this.validateToken(client);
 
+    client.disconnect(true);
+
     await this.manager.update(
       UserEntity,
       { [nameof<UserEntity>('id')]: payload.id },
       { online: moment.utc().valueOf() },
     );
+  }
+
+  async sendEvent(type: NoticeType, room_ids: string[], payload: WsPayload) {
+    const uniqueRooms = [...new Set(room_ids)];
+    this.server.of('/').to(uniqueRooms).emit(type, payload);
   }
 
   async validateToken(client: Socket) {

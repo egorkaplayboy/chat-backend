@@ -9,10 +9,14 @@ import { randomUUID } from 'crypto';
 import * as moment from 'moment';
 import { ILike } from 'typeorm';
 import { StorageItemEntity } from '../entities/storage-item.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService extends BaseService {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwt: JwtService,
+  ) {
     super();
   }
 

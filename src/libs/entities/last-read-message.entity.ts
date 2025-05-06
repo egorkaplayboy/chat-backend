@@ -12,18 +12,18 @@ import { UserEntity } from './user.entity';
 import { MessageEntity } from './message.entity';
 
 @Entity({ name: 'last_read_message' })
-@Index([
-  nameof<LastReadMessageEntity>('chat_id'),
-  nameof<LastReadMessageEntity>('user_id'),
-])
 @Index(
   [
     nameof<LastReadMessageEntity>('chat_id'),
     nameof<LastReadMessageEntity>('user_id'),
-    nameof<LastReadMessageEntity>('message_id'),
   ],
   { unique: true },
 )
+@Index([
+  nameof<LastReadMessageEntity>('chat_id'),
+  nameof<LastReadMessageEntity>('user_id'),
+  nameof<LastReadMessageEntity>('message_id'),
+])
 export class LastReadMessageEntity {
   @PrimaryColumn('uuid')
   id: string;

@@ -49,8 +49,9 @@ export class MessageEntity {
   @Column('bigint')
   created_at: number;
 
-  @Column('bigint')
-  updated_at: number;
+  @Column('bigint', { nullable: true })
+  updated_at?: number;
 
-  // attachments: string[]
+  @Column('text', { array: true, default: [] })
+  attachments: string[];
 }
