@@ -7,7 +7,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { nameof } from '../utils/entity';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { StorageItemEntity } from './storage-item.entity';
 
 export class UserDto {
@@ -25,6 +25,10 @@ export class UserDto {
 
   @IsString()
   created_at: number;
+
+  @IsString()
+  @IsOptional()
+  avatar_id?: string;
 }
 
 @Entity({ name: 'users' })

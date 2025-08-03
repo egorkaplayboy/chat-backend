@@ -1,15 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { User } from '../decorators/user.decorator';
 import { UserDto } from '../entities/user.entity';
-import { CreateMessageDto } from './dto/mesaage.dto';
-import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import {
+  CreateMessageDto,
+  GetMessagesQuery,
+  GetMessagesResponse,
+} from './dto/mesaage.dto';
+import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('message')
@@ -35,5 +41,18 @@ export class MessageController {
       },
       user,
     );
+  }
+
+  @Get()
+  @ApiResponse({ type: GetMessagesResponse, isArray: true })
+  async get(@User() user: UserDto, @Query() query: GetMessagesQuery) {
+    const limit = Number(query.limit) || 20;
+    const offset = Number(query.offset) || 0;
+
+    return this.messageService.getMessages(user, {
+      chat_id: query.chat_id,
+      limit,
+      offset,
+    });
   }
 }

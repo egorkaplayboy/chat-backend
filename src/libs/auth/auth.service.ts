@@ -36,7 +36,8 @@ export class AuthService extends BaseService {
   }
 
   async validatePayload(payload: Payload) {
-    return await this.userService.findOne({ username: payload.username });
+    const user = await this.userService.findOne({ username: payload.username });
+    return UserMapper.toDto(user);
   }
 
   async generateTokens(payload: UserDto) {
@@ -94,5 +95,23 @@ export class AuthService extends BaseService {
     });
 
     return payload;
+  }
+
+  async refresh(refresh_token: string) {
+    try {
+      const user = await this.jwt.verifyAsync<UserDto>(refresh_token, {
+        secret: this.config.getOrThrow<string>('JWT_SECRET'),
+        ignoreExpiration: false,
+      });
+
+      const existingUser = await this.userService.findOne({
+        username: user.username,
+      });
+      if (!existingUser) throw new HttpException('User not found', 404);
+
+      return this.generateTokens(UserMapper.toDto(existingUser));
+    } catch (e) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
   }
 }

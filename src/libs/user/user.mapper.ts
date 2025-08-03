@@ -8,6 +8,7 @@ export class UserMapper {
       last_name: e.last_name,
       created_at: e.created_at,
       username: e.username,
+      avatar_id: e.avatar_id,
     };
   }
 }

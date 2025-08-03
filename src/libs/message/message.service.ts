@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
-import { CreateMessageDto } from './dto/mesaage.dto';
+import { CreateMessageDto, GetMessagesQuery } from './dto/mesaage.dto';
 import { UserDto } from '../entities/user.entity';
 import { MessageEntity } from '../entities/message.entity';
 import { randomUUID } from 'crypto';
@@ -90,5 +90,26 @@ export class MessageService extends BaseService {
         additional_payload: { message },
       });
     }
+  }
+
+  async getMessages(user: UserDto, query: GetMessagesQuery) {
+    const request = `
+    select m.id, m.text,m.created_at,m.updated_at, m.attachments,
+    jsonb_build_object('id', u.id, 'username', u.username, 'avatar', u.avatar_id) as author,
+    case when reply.id is not null then jsonb_build_object('id', reply.id, 'text', reply.text, 'created_at', reply.created_at, 'updated_at', reply.updated_at) else null end as reply,
+    m.author_id = $4 as is_mine
+    from message m
+    join users u on m.author_id = u.id
+    left join message reply on m.reply_id = reply.id
+    where m.chat_id = $1
+    order by m.sort_order desc
+    limit $2 offset $3`;
+
+    return this.manager.query(request, [
+      query.chat_id,
+      query.limit,
+      query.offset,
+      user.id,
+    ]);
   }
 }

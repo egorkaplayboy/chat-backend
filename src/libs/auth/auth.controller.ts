@@ -45,6 +45,17 @@ export class AuthController {
     });
   }
 
+  @Public()
+  @Post('refresh')
+  async refresh(@Body('refresh_token') refresh_token: string) {
+    return this.authService.refresh(refresh_token);
+  }
+
+  @Get('me')
+  async getMe(@User() user: UserDto) {
+    return user;
+  }
+
   @Get('protect')
   test(@Body('test') test: string) {
     return test;
