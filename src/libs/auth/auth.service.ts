@@ -1,5 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UserService } from '../user/user.service';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Payload, RegisterUserDto, ValidateUserDto } from './dto/auth.dto';
 import { UserDto, UserEntity } from '../entities/user.entity';
@@ -10,18 +15,22 @@ import * as moment from 'moment';
 import { ILike } from 'typeorm';
 import { StorageItemEntity } from '../entities/storage-item.entity';
 import { JwtService } from '@nestjs/jwt';
+import { AppClient } from 'src/app-client/app-client';
 
 @Injectable()
 export class AuthService extends BaseService {
   constructor(
-    private readonly userService: UserService,
     private readonly jwt: JwtService,
+    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
   ) {
     super();
   }
 
   async validateUser(dto: ValidateUserDto) {
-    const user = await this.userService.findOne({ username: dto.username });
+    // const user = await this.userService.findOne({ username: dto.username });
+    const user = await this.appClient.local('user', 'findOne', {
+      username: dto.username,
+    });
     if (user) {
       const isValidPassword = await bcrypt.compare(dto.password, user.password);
 
@@ -36,7 +45,9 @@ export class AuthService extends BaseService {
   }
 
   async validatePayload(payload: Payload) {
-    const user = await this.userService.findOne({ username: payload.username });
+    const user = await this.appClient.local('user', 'findOne', {
+      username: payload.username,
+    });
     return UserMapper.toDto(user);
   }
 
@@ -104,10 +115,11 @@ export class AuthService extends BaseService {
         ignoreExpiration: false,
       });
 
-      const existingUser = await this.userService.findOne({
+      const existingUser = await this.appClient.local('user', 'findOne', {
         username: user.username,
       });
-      if (!existingUser) throw new HttpException('User not found', 404);
+      if (!existingUser)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
       return this.generateTokens(UserMapper.toDto(existingUser));
     } catch (e) {

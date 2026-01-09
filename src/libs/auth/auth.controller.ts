@@ -55,9 +55,4 @@ export class AuthController {
   async getMe(@User() user: UserDto) {
     return user;
   }
-
-  @Get('protect')
-  test(@Body('test') test: string) {
-    return test;
-  }
 }

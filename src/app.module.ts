@@ -10,11 +10,13 @@ import { ChatModule } from './libs/chat/chat.module';
 import { MessageModule } from './libs/message/message.module';
 import { LoggerMiddleware } from './libs/middleware/logger.middleware';
 import { MessageReactionModule } from './libs/message-reaction/message-reaction.module';
+import { AppClientModule } from './app-client/app-client.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '.env.dev'] }),
     TypeOrmModule.forRoot(TypeOrmConfig),
+    AppClientModule,
     AuthModule,
     UserModule,
     StorageModule,

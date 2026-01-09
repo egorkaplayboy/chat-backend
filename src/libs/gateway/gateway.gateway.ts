@@ -8,11 +8,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { DataSource } from 'typeorm';
-import { AuthService } from '../auth/auth.service';
 import { UserEntity } from '../entities/user.entity';
 import { nameof } from '../utils/entity';
 import * as moment from 'moment';
 import { NoticeType, WsPayload } from './gateway.type';
+import { forwardRef, Inject } from '@nestjs/common';
+import { AppClient } from 'src/app-client/app-client';
 
 @WebSocketGateway(5000)
 export class Gateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -25,7 +26,7 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     @InjectDataSource() private readonly datasource: DataSource,
-    private readonly authService: AuthService,
+    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -62,7 +63,7 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!token) throw new WsException('Unauthorized');
 
-    const payload = await this.authService.validateToken(token);
+    const payload = await this.appClient.local('auth', 'validateToken', token);
 
     if (!payload) throw new WsException('Unauthorized');
 
