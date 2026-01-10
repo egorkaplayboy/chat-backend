@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import * as amqp from 'amqplib';
 import { randomUUID } from 'crypto';
 import { SERVICE_METADATA } from '../decorators/service.decorator';
+import { extractMethodNamesFromClass } from '../utils/class';
 
 @Injectable()
 export class RabbitBroker implements OnModuleInit, OnModuleDestroy {
@@ -183,7 +184,7 @@ export class RabbitBroker implements OnModuleInit, OnModuleDestroy {
       },
       { noAck: false },
     );
-    this.logger.log(`RabbitMQ: ${queue} subscribed`);
+    this.logger.log(`${queue} subscribed`);
   }
 
   private async createAndBindQueue(exchange: string, routeKey: string) {
@@ -203,7 +204,7 @@ export class RabbitBroker implements OnModuleInit, OnModuleDestroy {
 
     for (const provider of providers) {
       const instance = provider.discoveredClass.instance;
-      const methodNames = this.extractMethodNamesFromClass(instance);
+      const methodNames = extractMethodNamesFromClass(instance);
       for (const methodName of methodNames) {
         await this.subscribe(
           provider.meta as string,
@@ -212,38 +213,5 @@ export class RabbitBroker implements OnModuleInit, OnModuleDestroy {
         );
       }
     }
-  }
-
-  private extractMethodNamesFromClass(instance: any): string[] {
-    const methodNames = new Set<string>();
-    const excludeMethods = new Set([
-      'onModuleInit',
-      'onModuleDestroy',
-      'constructor',
-      'toString',
-      'toJSON',
-      'valueOf',
-    ]);
-
-    let proto = Object.getPrototypeOf(instance);
-
-    while (proto && proto !== Object.prototype) {
-      const propertyNames = Object.getOwnPropertyNames(proto);
-
-      for (const propertyName of propertyNames) {
-        if (
-          !excludeMethods.has(propertyName) &&
-          !propertyName.startsWith('_') &&
-          propertyName !== 'constructor' &&
-          typeof instance[propertyName] === 'function'
-        ) {
-          methodNames.add(propertyName);
-        }
-      }
-
-      proto = Object.getPrototypeOf(proto);
-    }
-
-    return Array.from(methodNames);
   }
 }

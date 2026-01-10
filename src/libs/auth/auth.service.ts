@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Payload, RegisterUserDto, ValidateUserDto } from './dto/auth.dto';
 import { UserDto, UserEntity } from '../entities/user.entity';
@@ -9,15 +9,11 @@ import * as moment from 'moment';
 import { ILike } from 'typeorm';
 import { StorageItemEntity } from '../entities/storage-item.entity';
 import { JwtService } from '@nestjs/jwt';
-import { AppClient } from 'src/app-client/app-client';
 import { Service } from '../decorators/service.decorator';
 
 @Service('auth')
 export class AuthService extends BaseService {
-  constructor(
-    private readonly jwt: JwtService,
-    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
-  ) {
+  constructor(private readonly jwt: JwtService) {
     super();
   }
 

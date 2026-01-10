@@ -1,10 +1,4 @@
-import {
-  forwardRef,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { CreateMessageDto, GetMessagesQuery } from './dto/mesaage.dto';
 import { UserDto } from '../entities/user.entity';
@@ -16,15 +10,11 @@ import { NoticeType, NoticeWsName } from '../gateway/gateway.type';
 import { ChatUserSettingEntity } from '../entities/chat-user-setting.entity';
 import { groupBy } from '../utils/array';
 import { LastReadMessageEntity } from '../entities/last-read-message.entity';
-import { AppClient } from 'src/app-client/app-client';
 import { Service } from '../decorators/service.decorator';
 
 @Service('message')
 export class MessageService extends BaseService {
-  constructor(
-    private readonly ws: Gateway,
-    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
-  ) {
+  constructor(private readonly ws: Gateway) {
     super();
   }
 
