@@ -8,7 +8,6 @@ import { LocalStrategy } from './startegies/local.strategy';
 
 @Module({
   imports: [
-    // UserModule,
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

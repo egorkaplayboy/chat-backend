@@ -34,6 +34,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalGuards(new JwtGuard(reflector));
+
   await app.listen(3000);
 }
 bootstrap();

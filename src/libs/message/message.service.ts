@@ -17,8 +17,9 @@ import { ChatUserSettingEntity } from '../entities/chat-user-setting.entity';
 import { groupBy } from '../utils/array';
 import { LastReadMessageEntity } from '../entities/last-read-message.entity';
 import { AppClient } from 'src/app-client/app-client';
+import { Service } from '../decorators/service.decorator';
 
-@Injectable()
+@Service('message')
 export class MessageService extends BaseService {
   constructor(
     private readonly ws: Gateway,

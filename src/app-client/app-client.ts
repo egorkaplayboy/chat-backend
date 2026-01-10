@@ -1,35 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
-  AppServices,
   ServiceInstances,
   ServiceMethod,
   ServiceMethodArgs,
   ServiceMethodReturn,
   ServiceName,
 } from './app-client.type';
-import { ModuleRef } from '@nestjs/core';
-import { AppServicesMap } from './app-client.map';
+import { DiscoveryService } from '@golevelup/nestjs-discovery';
+import { SERVICE_METADATA } from 'src/libs/decorators/service.decorator';
+import { RabbitBroker } from 'src/libs/broker/rabbit.broker';
 
 @Injectable()
-export class AppClient {
-  constructor(private moduleRef: ModuleRef) {}
+export class AppClient implements OnModuleInit {
+  constructor(
+    private readonly discoveryService: DiscoveryService,
+    private readonly broker: RabbitBroker,
+  ) {}
 
-  private serviceInstanceMap = new Map<
-    ServiceName,
-    InstanceType<AppServices[ServiceName]>
-  >();
+  private readonly logger = new Logger(AppClient.name);
+
+  private serviceInstanceMap = new Map<string, Object>();
+
+  async onModuleInit() {
+    await this.exploreServices();
+  }
+
+  private async exploreServices() {
+    const providers =
+      await this.discoveryService.providersWithMetaAtKey(SERVICE_METADATA);
+
+    for (const provider of providers) {
+      this.serviceInstanceMap.set(
+        provider.meta as string,
+        provider.discoveredClass.instance,
+      );
+    }
+
+    this.logger.log(`AppClient initialized with ${providers.length} services`);
+  }
 
   private getService<S extends ServiceName>(
     serviceName: S,
   ): ServiceInstances[S] {
-    if (!this.serviceInstanceMap.has(serviceName)) {
-      const ServiceClass = AppServicesMap[serviceName];
-      const instance = this.moduleRef.get(ServiceClass, {
-        strict: false,
-      });
-      this.serviceInstanceMap.set(serviceName, instance);
-    }
-
     return this.serviceInstanceMap.get(serviceName) as ServiceInstances[S];
   }
 
@@ -42,5 +54,29 @@ export class AppClient {
     const method = service[methodName] as (...args: any[]) => any;
 
     return method.apply(service, args);
+  }
+
+  async rpc<S extends ServiceName, M extends ServiceMethod<S>>(
+    serviceName: S,
+    methodName: M,
+    ...args: ServiceMethodArgs<S, M>
+  ): Promise<ServiceMethodReturn<S, M>> {
+    const timeoutMs = 5000;
+
+    return await this.broker.publish<
+      ServiceMethodArgs<S, M>,
+      ServiceMethodReturn<S, M>
+    >(serviceName, methodName as string, args, timeoutMs);
+  }
+
+  async start<S extends ServiceName, M extends ServiceMethod<S>>(
+    serviceName: S,
+    methodName: M,
+    ...args: ServiceMethodArgs<S, M>
+  ): Promise<ServiceMethodReturn<S, M>> {
+    return await this.broker.publish<
+      ServiceMethodArgs<S, M>,
+      ServiceMethodReturn<S, M>
+    >(serviceName, methodName as string, args, undefined);
   }
 }

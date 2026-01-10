@@ -11,12 +11,14 @@ import { MessageModule } from './libs/message/message.module';
 import { LoggerMiddleware } from './libs/middleware/logger.middleware';
 import { MessageReactionModule } from './libs/message-reaction/message-reaction.module';
 import { AppClientModule } from './app-client/app-client.module';
+import { RabbitBrokerModule } from './libs/broker/rabbit.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '.env.dev'] }),
     TypeOrmModule.forRoot(TypeOrmConfig),
     AppClientModule,
+    RabbitBrokerModule,
     AuthModule,
     UserModule,
     StorageModule,

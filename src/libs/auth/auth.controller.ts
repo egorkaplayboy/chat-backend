@@ -1,13 +1,14 @@
 import {
   Body,
   Controller,
+  forwardRef,
   Get,
+  Inject,
   Post,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { User } from '../decorators/user.decorator';
 import { UserDto } from '../entities/user.entity';
 import { LocalGuard } from '../guard/local.guard';
@@ -15,16 +16,19 @@ import { Public } from '../decorators/public.decorator';
 import { LoginDto, RegisterUserDto } from './dto/auth.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { AppClient } from 'src/app-client/app-client';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
+  ) {}
 
   @Public()
   @Post('login')
   @UseGuards(LocalGuard)
   async login(@User() user: UserDto, @Body() dto: LoginDto) {
-    return this.authService.generateTokens(user);
+    return this.appClient.rpc('auth', 'generateTokens', user);
   }
 
   @Public()
@@ -36,7 +40,7 @@ export class AuthController {
     @Body() dto: RegisterUserDto,
     @UploadedFile() avatar: Express.Multer.File,
   ) {
-    return this.authService.register({
+    return this.appClient.rpc('auth', 'register', {
       first_name: dto.first_name,
       avatar,
       last_name: dto.last_name,
@@ -48,7 +52,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   async refresh(@Body('refresh_token') refresh_token: string) {
-    return this.authService.refresh(refresh_token);
+    return this.appClient.rpc('auth', 'refresh', refresh_token);
   }
 
   @Get('me')

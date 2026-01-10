@@ -1,10 +1,4 @@
-import {
-  forwardRef,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Payload, RegisterUserDto, ValidateUserDto } from './dto/auth.dto';
 import { UserDto, UserEntity } from '../entities/user.entity';
@@ -16,8 +10,9 @@ import { ILike } from 'typeorm';
 import { StorageItemEntity } from '../entities/storage-item.entity';
 import { JwtService } from '@nestjs/jwt';
 import { AppClient } from 'src/app-client/app-client';
+import { Service } from '../decorators/service.decorator';
 
-@Injectable()
+@Service('auth')
 export class AuthService extends BaseService {
   constructor(
     private readonly jwt: JwtService,
@@ -27,7 +22,6 @@ export class AuthService extends BaseService {
   }
 
   async validateUser(dto: ValidateUserDto) {
-    // const user = await this.userService.findOne({ username: dto.username });
     const user = await this.appClient.local('user', 'findOne', {
       username: dto.username,
     });

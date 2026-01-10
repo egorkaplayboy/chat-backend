@@ -7,7 +7,9 @@ import {
   MessageReactionInsertDto,
 } from './dto/message-reaction.dto';
 import { nameof } from '../utils/entity';
+import { Service } from '../decorators/service.decorator';
 
+@Service('messageReaction')
 export class MessageReactionService extends BaseService {
   async insertReaction(user: UserDto, dto: MessageReactionInsertDto) {
     if (dto.value.trim() === '') return;

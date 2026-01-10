@@ -2,13 +2,14 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { ChatService } from './chat.service';
 import { User } from '../decorators/user.decorator';
 import { UserDto } from '../entities/user.entity';
 import {
@@ -24,17 +25,20 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AppClient } from 'src/app-client/app-client';
 
 @Controller('chat')
 @ApiTags('Chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
+  ) {}
 
   @Post('create')
   @ApiBody({ type: CreateChatDto })
   @ApiResponse({ type: String })
   async createChat(@User() user: UserDto, @Body() dto: CreateChatDto) {
-    return this.chatService.createChat(dto, user);
+    return this.appClient.rpc('chat', 'createChat', dto, user);
   }
 
   @Get()
@@ -43,13 +47,13 @@ export class ChatController {
     const limit = Number(query.limit) || 20;
     const offset = Number(query.offset) || 0;
 
-    return this.chatService.getChats(user, { limit, offset });
+    return this.appClient.rpc('chat', 'getChats', user, { limit, offset });
   }
 
   @Delete('/:chat_id')
   @ApiNoContentResponse()
   async deleteChat(@Param() dto: ChatIdDto) {
-    return this.chatService.deleteChat(dto);
+    return this.appClient.rpc('chat', 'deleteChat', dto);
   }
 
   @Patch('update-setting')
@@ -59,6 +63,6 @@ export class ChatController {
     @User() user: UserDto,
     @Body() body: ChatSettingActionDto,
   ) {
-    return this.chatService.chatSettingAction(user, body);
+    return this.appClient.rpc('chat', 'chatSettingAction', user, body);
   }
 }

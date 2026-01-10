@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { Gateway } from '../gateway/gateway.gateway';
 import {
@@ -14,8 +13,9 @@ import { UserDto } from '../entities/user.entity';
 import { ChatUserSettingEntity } from '../entities/chat-user-setting.entity';
 import { NoticeType, NoticeWsName } from '../gateway/gateway.type';
 import { nameof } from '../utils/entity';
+import { Service } from '../decorators/service.decorator';
 
-@Injectable()
+@Service('chat')
 export class ChatService extends BaseService {
   constructor(private readonly ws: Gateway) {
     super();

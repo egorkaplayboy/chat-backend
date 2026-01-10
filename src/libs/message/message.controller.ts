@@ -1,13 +1,14 @@
 import {
   Body,
   Controller,
+  forwardRef,
   Get,
+  Inject,
   Post,
   Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { MessageService } from './message.service';
 import { User } from '../decorators/user.decorator';
 import { UserDto } from '../entities/user.entity';
 import {
@@ -17,10 +18,13 @@ import {
 } from './dto/mesaage.dto';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AppClient } from 'src/app-client/app-client';
 
 @Controller('message')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(
+    @Inject(forwardRef(() => AppClient)) private readonly appClient: AppClient,
+  ) {}
 
   @Post('create')
   @ApiBody({ type: CreateMessageDto })
@@ -31,7 +35,9 @@ export class MessageController {
     @Body() dto: CreateMessageDto,
     @UploadedFiles() attachments?: Express.Multer.File[],
   ) {
-    return this.messageService.createMessage(
+    return this.appClient.rpc(
+      'message',
+      'createMessage',
       {
         attachments,
         chat_id: dto.chat_id,
@@ -49,7 +55,7 @@ export class MessageController {
     const limit = Number(query.limit) || 20;
     const offset = Number(query.offset) || 0;
 
-    return this.messageService.getMessages(user, {
+    return this.appClient.rpc('message', 'getMessages', user, {
       chat_id: query.chat_id,
       limit,
       offset,
