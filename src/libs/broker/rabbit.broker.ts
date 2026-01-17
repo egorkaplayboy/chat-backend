@@ -50,8 +50,9 @@ export class RabbitBroker implements OnModuleInit, OnModuleDestroy {
       await this.subscribeOnReply();
 
       await this.subscribeAll();
+      this.logger.log('successfully connected');
     } catch (error: any) {
-      throw error;
+      this.logger.error('failed to connect', error);
     }
   }
 
@@ -69,8 +70,9 @@ export class RabbitBroker implements OnModuleInit, OnModuleDestroy {
         handler.reject('Connection closed');
       }
       this.correlationIdMap.clear();
+      this.logger.log('successfully disconnect');
     } catch (error: any) {
-      throw error;
+      this.logger.error('failed to disconnect', error);
     }
   }
 
