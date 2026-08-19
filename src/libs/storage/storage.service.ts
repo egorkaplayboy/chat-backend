@@ -15,7 +15,7 @@ import { randomUUID } from 'crypto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { StorageItemEntity } from '../entities/storage-item.entity';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { supportedImageMimeTypes } from './storage.type';
 import { Readable } from 'stream';
 
